@@ -1,6 +1,6 @@
 import express, { Application } from 'express';
 import dotenv from 'dotenv';
-import cors from 'cors'; // Make sure this is working now
+import cors from 'cors'; // CORS import
 import connectDB from './db';
 import userRoutes from './routes/userRoutes'; // Import routes
 import authRoutes from './routes/authRoutes';
@@ -12,8 +12,20 @@ const app: Application = express();
 app.use(express.json());
 
 // CORS Configuration
+const allowedOrigins = [
+  'https://bigbytehealth.netlify.app', // Live production frontend
+  'http://localhost:3000', // Local development frontend
+];
+
 app.use(cors({
-  origin: 'http://localhost:3000', // Allow requests from your frontend URL
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps, Postman, etc.) or check allowed origins
+    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   methods: ['GET', 'POST', 'PUT', 'DELETE'], // Allowed HTTP methods
   credentials: true, // If you want to send cookies or authorization headers
 }));
@@ -21,7 +33,7 @@ app.use(cors({
 // Connect to MongoDB
 connectDB();
 
-// Register the user routes
+// Register the user and auth routes
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes); // Mount the user routes here
 

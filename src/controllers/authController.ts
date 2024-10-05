@@ -86,6 +86,7 @@ export const registerWithEmail = async (req: Request, res: Response) => {
 };
 
 // Email/Password Login
+// Email/Password Login
 export const loginWithEmail = async (req: Request, res: Response) => {
   const { email, password } = req.body;
 
@@ -123,8 +124,16 @@ export const loginWithEmail = async (req: Request, res: Response) => {
 
     console.log('Login successful, generated JWT:', token);
 
-    // Send the token back to the client
-    res.json({ token });
+    // Send the token and user information back to the client
+    res.json({
+      token,
+      user: {
+        _id: user._id,
+        fullName: user.fullName,
+        email: user.email,
+        phone: user.phone,
+      },
+    });
   } catch (error) {
     console.error('Login error:', error);
     res.status(500).json({ message: 'Server error', error });
