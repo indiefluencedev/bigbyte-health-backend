@@ -14,7 +14,7 @@ passport.use(
         let user = await User.findOne({ googleId: profile.id });
 
         if (user) {
-          return done(null, user);
+          return done(undefined, user);
         }
 
         user = new User({
@@ -25,9 +25,9 @@ passport.use(
         });
 
         await user.save();
-        done(null, user);
+        done(undefined, user);
       } catch (error) {
-        done(error, null);
+        done(error, undefined);
       }
     }
   )
@@ -35,14 +35,14 @@ passport.use(
 
 // Serialize and deserialize user
 passport.serializeUser((user: any, done) => {
-  done(null, user.id);
+  done(undefined, user.id);
 });
 
 passport.deserializeUser(async (id: string, done) => {
   try {
     const user = await User.findById(id);
-    done(null, user);
+    done(undefined, user);
   } catch (error) {
-    done(error, null);
+    done(error, undefined);
   }
 });
