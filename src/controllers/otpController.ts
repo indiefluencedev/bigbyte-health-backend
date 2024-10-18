@@ -1,7 +1,8 @@
+// src/controllers/otpController.ts
 import { Request, Response } from 'express';
 import crypto from 'crypto';
 import User from '../models/User';
-import { sendEmail } from '../utils/sendEmail';
+import { sendEmail, generateEmailTemplate } from '../utils/sendEmail'; // Import the template function
 
 // Function to generate OTP
 const generateOTP = (): string => {
@@ -27,9 +28,7 @@ export const verifyOTP = async (req: Request, res: Response): Promise<Response> 
       user.otpExpiry = undefined; // Clear OTP expiry
       await user.save();
 
-      return res
-        .status(200)
-        .json({ message: 'User verified successfully. You can now log in.' });
+      return res.status(200).json({ message: 'User verified successfully. You can now log in.' });
     } else {
       return res.status(400).json({ message: 'Invalid OTP or OTP has expired' });
     }
@@ -59,17 +58,18 @@ export const resendOTP = async (req: Request, res: Response): Promise<Response> 
     user.otpExpiry = otpExpiry;
     await user.save();
 
-    // Send OTP via email
+    // Generate the HTML content using the template function
+    const htmlContent = generateEmailTemplate(otp);
+
+    // Send OTP via email with Big Byte Health branding
     await sendEmail({
-      from: `"Your App Name" <${process.env.EMAIL_USER}>`,
+      from: `"Big Byte Health" <${process.env.EMAIL_USER}>`,
       to: email,
       subject: 'Resend OTP Verification',
-      text: `Your new OTP for registration is: ${otp}`,
+      html: htmlContent, // Include the HTML content
     });
 
-    return res
-      .status(200)
-      .json({ message: 'OTP resent successfully. Please check your email.' });
+    return res.status(200).json({ message: 'OTP resent successfully. Please check your email.' });
   } catch (error) {
     console.error('Error resending OTP:', error);
     return res.status(500).json({ message: 'Server error', error });

@@ -2,64 +2,72 @@ import { Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import User from '../models/User';
-import { sendEmail } from '../utils/sendEmail';
+import { sendEmail , generateEmailTemplate } from '../utils/sendEmail';
 import crypto from 'crypto';
 import { OAuth2Client } from 'google-auth-library';
 
-// Function to generate OTP
+
+
+
 const generateOTP = (): string => {
-  return crypto.randomInt(100000, 999999).toString(); // Generates a 6-digit OTP
+  return crypto.randomInt(100000, 999999).toString();
 };
 
-// Nodemailer transporter is now in sendEmail.ts
-
-// Email/Password Registration with OTP generation
 export const registerWithEmail = async (req: Request, res: Response): Promise<Response> => {
-  const { fullName, email, phone, password } = req.body;
+  const { fullName, email, password } = req.body;
 
   try {
-    // Check if user already exists
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
-      return res.status(400).json({ message: 'User already exists' });
+    // Validate required fields
+    if (!fullName || !email || !password) {
+      return res.status(400).json({ message: 'Please provide fullName, email, and password.' });
     }
 
-    // Hash the password
-    const hashedPassword = await bcrypt.hash(password, 12);
+    // Check if the user already exists
+    const existingUser = await User.findOne({ email });
 
-    // Generate OTP and set an expiry (10 minutes from now)
+    if (existingUser) {
+      return res.status(400).json({ message: 'User already exists with this email.' });
+    }
+
+    // Hash the password before saving
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Generate OTP and set expiry
     const otp = generateOTP();
-    const otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+    const otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // Expires in 10 minutes
 
-    // Create new user but mark as unverified
+    // Create a new user
     const newUser = new User({
       fullName,
       email,
-      phone,
       password: hashedPassword,
+      isVerified: false,
       otp,
       otpExpiry,
-      isVerified: false,
     });
 
     await newUser.save();
 
-    // Send OTP via email
+    // Generate the HTML content using the template function
+    const htmlContent = generateEmailTemplate(otp);
+
+    // Send OTP via email with Big Byte Health branding
     await sendEmail({
-      from: `"Your App Name" <${process.env.EMAIL_USER}>`,
+      from: `"Big Byte Health" <${process.env.EMAIL_USER}>`,
       to: email,
-      subject: 'OTP Verification for Registration',
-      text: `Your OTP for registration is: ${otp}`,
+      subject: 'Email Verification OTP',
+      html: htmlContent,
     });
 
     return res.status(201).json({
-      message: 'OTP sent successfully. Please verify your email to complete registration.',
+      message: 'Registration successful. Please verify your email using the OTP sent.',
     });
   } catch (error) {
     console.error('Error registering user:', error);
     return res.status(500).json({ message: 'Server error', error });
   }
 };
+
 
 // Email/Password Login
 export const loginWithEmail = async (req: Request, res: Response): Promise<Response> => {

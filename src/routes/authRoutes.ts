@@ -1,3 +1,4 @@
+// src/routes/authRoutes.ts
 import express from 'express';
 import {
   registerWithEmail,
@@ -19,5 +20,4 @@ router.post('/resend-otp', resendOTP);
 // Google OAuth Callback
 router.post('/google/callback', googleCallback);
 
-// Export the router
 export default router;
