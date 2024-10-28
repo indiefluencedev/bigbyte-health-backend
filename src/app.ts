@@ -4,7 +4,7 @@ import cors from 'cors'; // CORS import
 import connectDB from './db';
 import userRoutes from './routes/userRoutes'; // Import routes
 import authRoutes from './routes/authRoutes';
-
+import appointmentRoutes from './routes/appointment';
 dotenv.config();
 const app: Application = express();
 
@@ -38,6 +38,7 @@ connectDB();
 // Register the user and auth routes
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes); // Mount the user routes here
+app.use('/api/appointments', appointmentRoutes );
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
