@@ -15,7 +15,8 @@ app.use(express.json());
 const allowedOrigins = [
   'https://bigbytehealth.netlify.app', // Live production frontend
   'http://localhost:3000', // Local development frontend
-  'https://www.bigbytehealth.com'
+  'https://www.bigbytehealth.com',
+  'https://bigbytehealth.com'
   
 ];
 
