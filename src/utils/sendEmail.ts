@@ -1,12 +1,12 @@
 // src/utils/sendEmail.ts
-import nodemailer from 'nodemailer';
-import Mail from 'nodemailer/lib/mailer';
-import dotenv from 'dotenv';
+import nodemailer from "nodemailer";
+import Mail from "nodemailer/lib/mailer";
+import dotenv from "dotenv";
 
 dotenv.config();
 
 const transporter = nodemailer.createTransport({
-  service: 'gmail', // Use your email service provider
+  service: "gmail", // Use your email service provider
   auth: {
     user: process.env.EMAIL_USER, // Your email address
     pass: process.env.EMAIL_PASS, // Your email password or app-specific password
@@ -19,7 +19,6 @@ export const generateEmailTemplate = (otp: string): string => {
     <div style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: 0 auto;">
       <div style="text-align: center; padding: 20px;">
         <h1 style="color: #004B65;">Big Byte Health</h1>
-        <p style="font-size: 16px; color: #555;">We are excited to have you on board!</p>
       </div>
       <div style="padding: 20px; background-color: #f7f7f7; border-radius: 10px;">
         <h2 style="text-align: center; color: #004B65;">Your OTP Code</h2>
@@ -37,9 +36,9 @@ export const generateEmailTemplate = (otp: string): string => {
 export const sendEmail = async (options: Mail.Options): Promise<void> => {
   try {
     await transporter.sendMail(options);
-    console.log('Email sent:', options.to);
+    console.log("Email sent:", options.to);
   } catch (error) {
-    console.error('Error sending email:', error);
-    throw new Error('Email could not be sent');
+    console.error("Error sending email:", error);
+    throw new Error("Email could not be sent");
   }
 };
